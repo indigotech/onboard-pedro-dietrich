@@ -1,0 +1,17 @@
+{
+  "name": "onboard-backend-project",
+  "version": "1.0.0",
+  "description": "Small backend project for onboarding on Taqtile.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Pedro Martins Dietrich",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "graphql": "^16.9.0",
+    "graphql-http": "^1.22.1",
+    "ruru": "^2.0.0-beta.13"
+  }
+}
