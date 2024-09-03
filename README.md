@@ -17,3 +17,4 @@ This project uses Node.js `v20.16.0` and npm `10.8.1`.
 To install the dependencies, run `npm install`.
 
 To start the server at `localhost:4000`, run `npm start`.
+For development, use `npm run dev` instead, which starts the server with hot realoading.
