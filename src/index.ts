@@ -2,6 +2,7 @@ import { ApolloServer } from '@apollo/server';
 import { GraphQLError } from 'graphql';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -56,6 +57,10 @@ function validateBirthDate(birthDate: string): boolean {
   return birthDateTime > fromDate && birthDateTime < today;
 }
 
+async function hashPassword(password: string): Promise<string> {
+  return await bcrypt.hash(password, 10);
+}
+
 async function insertUserIntoDB(userData: UserInput): Promise<User> {
   if (!validatePassword(userData.password)) {
     throw new GraphQLError('Password needs to contain at least 6 characters, with at least 1 letter and 1 digit.', {
@@ -77,7 +82,7 @@ async function insertUserIntoDB(userData: UserInput): Promise<User> {
       data: {
         name: userData.name,
         email: userData.email,
-        password: userData.password,
+        password: await hashPassword(userData.password),
         birthDate: new Date(userData.birthDate),
       },
     });
