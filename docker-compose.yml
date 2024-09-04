@@ -1,0 +1,22 @@
+services:
+  localdb:
+    image: postgres:16.4
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./db/dumps:/app-db-dumps
+    environment:
+      - POSTGRES_USER=pedro-dietrich-onboard
+      - POSTGRES_PASSWORD=postgres-local
+      - POSTGRESDB=pedro-dietrich-onboard
+
+  testdb:
+    image: postgres:16.4
+    ports:
+      - '5433:5432'
+    volumes:
+      - ./db/dumps:/app-db-dumps
+    environment:
+      - POSTGRES_USER=pedro-dietrich-onboard
+      - POSTGRES_PASSWORD=postgres-local
+      - POSTGRESDB=pedro-dietrich-onboard-test
