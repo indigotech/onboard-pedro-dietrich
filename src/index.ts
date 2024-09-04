@@ -2,9 +2,9 @@ import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 
 const typeDefs = `#graphql
-    type Query {
-        hello: String!
-    }
+  type Query {
+    hello: String!
+  }
 `;
 
 const resolvers = {
