@@ -1,5 +1,5 @@
 {
-    "exec": "tsc && node dist/index.js",
-    "ext": ".ts",
-    "watch": ["src"]
+  "exec": "tsc && node dist/index.js",
+  "ext": ".ts",
+  "watch": ["src"]
 }
