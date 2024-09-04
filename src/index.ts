@@ -43,7 +43,36 @@ interface User {
   birthDate: Date;
 }
 
+function validatePassword(password: string): boolean {
+  // Regex matches for at least 1 letter, 1 digit and at least 6 characters in total.
+  const pattern = new RegExp('^(?=.*?[A-Za-z])(?=.*?\\d).{6,}$');
+  return pattern.test(password);
+}
+
+function validateBirthDate(birthDate: string): boolean {
+  const birthDateTime = new Date(birthDate).getTime();
+  const fromDate = new Date('1900-01-01').getTime();
+  const today = new Date().getTime();
+
+  return birthDateTime > fromDate && birthDateTime < today;
+}
+
 async function insertUserIntoDB(userData: UserInput): Promise<User> {
+  if (!validatePassword(userData.password)) {
+    throw new GraphQLError('Password needs to contain at least 6 characters, with at least 1 letter and 1 digit.', {
+      extensions: {
+        code: 'INVALID_PASSWORD',
+      },
+    });
+  }
+  if (!validateBirthDate(userData.birthDate)) {
+    throw new GraphQLError('Unreasonable birth date detected.', {
+      extensions: {
+        code: 'INVALID_BIRTH_DATE',
+      },
+    });
+  }
+
   try {
     const newUser = await prisma.user.create({
       data: {
