@@ -1,5 +1,5 @@
-import assert from 'assert';
 import axios from 'axios';
+import { expect } from 'chai';
 import { ApolloServer } from '@apollo/server';
 
 import { startServer } from '../src/server.js';
@@ -25,7 +25,7 @@ describe('Hello API', function () {
           }
         `,
       });
-      assert.equal(response.data.data.hello, 'Hello World!');
+      expect(response.data.data.hello).to.be.eq('Hello World!');
     });
   });
 });
