@@ -71,9 +71,7 @@ const resolvers = {
   },
   Mutation: {
     createUser: async (_, args: { user: UserInput }): Promise<User> => {
-      const user = await insertUserIntoDB(args.user);
-
-      return user;
+      return insertUserIntoDB(args.user);
     },
   },
 };
