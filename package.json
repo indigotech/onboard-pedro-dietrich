@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "compile": "tsc",
-    "start": "npm run compile && node ./dist/index.js",
+    "start": "npm run compile && node ./dist/src/index.js",
     "dev": "npm run compile && nodemon",
     "lint": "eslint .",
     "test": "npm run compile && mocha 'dist/test/**/*.js'"
@@ -26,6 +26,7 @@
     "@types/eslint__js": "8.42.3",
     "@types/mocha": "10.0.7",
     "@types/node": "22.5.2",
+    "axios": "1.7.7",
     "eslint": "9.9.1",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-prettier": "5.2.1",
