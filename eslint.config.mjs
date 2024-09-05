@@ -12,7 +12,7 @@ export default tseslint.config(
     ignores: ['eslint.config.mjs', 'dist/**'],
   },
   {
-    files: ['src/**/*.ts'],
+    files: ['src/**/*.ts', 'test/**/*.ts'],
   },
   {
     languageOptions: {

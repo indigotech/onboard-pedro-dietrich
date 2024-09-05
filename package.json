@@ -6,7 +6,9 @@
   "scripts": {
     "compile": "tsc",
     "start": "npm run compile && node ./dist/index.js",
-    "dev": "npm run compile && nodemon"
+    "dev": "npm run compile && nodemon",
+    "lint": "eslint .",
+    "test": "npm run compile && mocha 'dist/test/**/*.js'"
   },
   "author": "Pedro Martins Dietrich",
   "license": "ISC",
@@ -22,10 +24,12 @@
     "@eslint/js": "9.9.1",
     "@types/bcryptjs": "2.4.6",
     "@types/eslint__js": "8.42.3",
+    "@types/mocha": "10.0.7",
     "@types/node": "22.5.2",
     "eslint": "9.9.1",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-prettier": "5.2.1",
+    "mocha": "10.7.3",
     "nodemon": "3.1.4",
     "prettier": "3.3.3",
     "prisma": "5.19.1",
