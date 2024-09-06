@@ -2,14 +2,14 @@ import axios from 'axios';
 import { expect } from 'chai';
 import { ApolloServer } from '@apollo/server';
 
-import { startDatabase, startServer, prisma } from '../src/server.js';
+import { initializeDatabaseInstance, startServer, prisma } from '../src/server.js';
 
 describe('Onboard server', function () {
   let server: ApolloServer;
   let url: string;
 
   before(async function () {
-    startDatabase();
+    initializeDatabaseInstance();
     ({ server, url } = await startServer(parseInt(process.env.SERVER_PORT)));
   });
 

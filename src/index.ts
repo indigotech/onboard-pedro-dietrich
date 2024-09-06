@@ -1,5 +1,5 @@
-import { startDatabase, startServer } from './server.js';
+import { initializeDatabaseInstance, startServer } from './server.js';
 
-startDatabase();
+initializeDatabaseInstance();
 const { url } = await startServer(parseInt(process.env.SERVER_PORT));
 console.log(`Server ready at: ${url}`);

@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 
 export let prisma: PrismaClient;
 
-export const startDatabase = (): void => {
+export const initializeDatabaseInstance = (): void => {
   prisma = new PrismaClient();
 };
 
