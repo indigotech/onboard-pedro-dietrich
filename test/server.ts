@@ -18,11 +18,7 @@ describe('Onboard server API', function () {
     await server.stop();
   });
 
-  afterEach(async function () {
-    await prisma.user.deleteMany({});
-  });
-
-  describe('Hello query', function () {
+  describe('#Hello query', function () {
     it('should fetch the response "Hello World!"', async function () {
       const response = await axios.post(url, {
         query: `#graphql
@@ -36,7 +32,11 @@ describe('Onboard server API', function () {
     });
   });
 
-  describe('Create user mutation', async function () {
+  describe('#Create user mutation', async function () {
+    afterEach(async function () {
+      await prisma.user.deleteMany({});
+    });
+
     const userInput: UserInput = {
       name: 'Test User',
       email: 'test@user.com',
@@ -61,35 +61,22 @@ describe('Onboard server API', function () {
       },
     };
 
-    let createdUser: User;
-    let databaseUserInfo: {
-      id: number;
-      name: string;
-      email: string;
-      password: string;
-      birthDate: Date;
-    };
-
-    before(async function () {
+    it('should store user in the database and return it to client', async function () {
       const response = await axios.post(url, createUserMutation);
-      createdUser = response.data.data.createUser;
-      databaseUserInfo = await prisma.user.findUnique({ where: { email: userInput.email } });
-    });
+      const createdUser: User = response.data.data.createUser;
+      const databaseUserInfo = await prisma.user.findUnique({ where: { email: userInput.email } });
 
-    it('user ID in response should match user ID in the database', function () {
-      expect(createdUser.id).to.be.eq(databaseUserInfo.id.toString());
-    });
-    it('user name in response should match user name in request', function () {
-      expect(createdUser.name).to.be.eq(userInput.name);
-    });
-    it('user e-mail in response should match user e-mail in request', function () {
-      expect(createdUser.email).to.be.eq(userInput.email);
-    });
-    it('user birth date in response should match user birth date in the request', function () {
-      expect(createdUser.birthDate).to.be.eq(new Date(userInput.birthDate).getTime().toString());
-    });
-    it('user password in request, after encryption, should match user password in the database', function () {
-      expect(bcrypt.compareSync(userInput.password, databaseUserInfo.password)).to.be.equal(true);
+      expect(databaseUserInfo.name).to.be.eq(userInput.name);
+      expect(databaseUserInfo.email).to.be.eq(userInput.email);
+      expect(databaseUserInfo.birthDate).to.be.deep.eq(new Date(userInput.birthDate));
+      expect(bcrypt.compareSync(userInput.password, databaseUserInfo.password)).to.be.eq(true);
+
+      expect(createdUser).to.be.deep.eq({
+        id: databaseUserInfo.id.toString(),
+        name: userInput.name,
+        email: userInput.email,
+        birthDate: new Date(userInput.birthDate).getTime().toString(),
+      });
     });
   });
 });
