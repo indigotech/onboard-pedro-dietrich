@@ -4,7 +4,11 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+export let prisma: PrismaClient;
+
+export const initializeDatabaseInstance = (): void => {
+  prisma = new PrismaClient();
+};
 
 const typeDefs = `#graphql
   type Query {
