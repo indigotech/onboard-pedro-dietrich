@@ -44,9 +44,8 @@ interface User {
 }
 
 function validatePassword(password: string): boolean {
-  // Regex matches for at least 1 letter, 1 digit and at least 6 characters in total.
-  const pattern = new RegExp('^(?=.*?[A-Za-z])(?=.*?\\d).{6,}$');
-  return pattern.test(password);
+  const passwordValidationRegex = new RegExp('^(?=.*?[A-Za-z])(?=.*?\\d).{6,}$');
+  return passwordValidationRegex.test(password);
 }
 
 function validateBirthDate(birthDate: string): boolean {
