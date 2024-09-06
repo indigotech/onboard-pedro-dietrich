@@ -79,7 +79,7 @@ async function insertUserIntoDB(userData: UserInput): Promise<User> {
   if (!validatePassword(userData.password)) {
     throw new ServerErrorGQL(
       400,
-      'Invalid password',
+      'Invalid password.',
       'Password needs to contain at least 6 characters, with at least 1 letter and 1 digit.',
     );
   }
