@@ -25,3 +25,9 @@ It can be shut down later with `docker compose stop`.
 
 To start the server at `localhost:4000`, run `npm start`.
 For development, use `npm run dev` instead, which starts the server with hot realoading.
+
+# Testing
+
+To run the tests, use `npm test`.
+
+Additionally, it is recommended to also verify the formatting of the code, which can be done with `npm run lint`.
