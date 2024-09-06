@@ -1,8 +1,9 @@
+import bcrypt from 'bcryptjs';
 import { ApolloServer } from '@apollo/server';
 import { GraphQLError } from 'graphql';
-import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { startStandaloneServer } from '@apollo/server/standalone';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export let prisma: PrismaClient;
 
@@ -48,6 +49,15 @@ export interface User {
   birthDate: Date;
 }
 
+class ServerErrorGQL extends GraphQLError {
+  public code: number;
+
+  public constructor(code: number, message: string, additionalInfo: string) {
+    super(message, { extensions: { additionalInfo: additionalInfo } });
+    this.code = code;
+  }
+}
+
 function validatePassword(password: string): boolean {
   const passwordValidationRegex = new RegExp('^(?=.*?[A-Za-z])(?=.*?\\d).{6,}$');
   return passwordValidationRegex.test(password);
@@ -67,18 +77,18 @@ async function hashPassword(password: string): Promise<string> {
 
 async function insertUserIntoDB(userData: UserInput): Promise<User> {
   if (!validatePassword(userData.password)) {
-    throw new GraphQLError('Password needs to contain at least 6 characters, with at least 1 letter and 1 digit.', {
-      extensions: {
-        code: 'INVALID_PASSWORD',
-      },
-    });
+    throw new ServerErrorGQL(
+      400,
+      'Invalid password',
+      'Password needs to contain at least 6 characters, with at least 1 letter and 1 digit.',
+    );
   }
   if (!validateBirthDate(userData.birthDate)) {
-    throw new GraphQLError('Unreasonable birth date detected.', {
-      extensions: {
-        code: 'INVALID_BIRTH_DATE',
-      },
-    });
+    throw new ServerErrorGQL(
+      400,
+      'Unreasonable birth date detected.',
+      'The birth date must be between the year 1900 and the current date.',
+    );
   }
 
   try {
@@ -91,12 +101,15 @@ async function insertUserIntoDB(userData: UserInput): Promise<User> {
       },
     });
   } catch (err) {
-    throw new GraphQLError('Failed to create new user.', {
-      extensions: {
-        code: 'INVALID_USER_DATA',
-        errorInfo: err,
-      },
-    });
+    let message = 'User could not be created.';
+    let additionalInfo = 'The user could not be inserted in the database due to an unhandled error.';
+
+    if (err instanceof PrismaClientKnownRequestError && err.code === 'P2002') {
+      message = 'E-mail is already in use.';
+      additionalInfo = 'The e-mail must be unique, and the one received is already present in the database.';
+    }
+
+    throw new ServerErrorGQL(400, message, additionalInfo);
   }
 }
 
