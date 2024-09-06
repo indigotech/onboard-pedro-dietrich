@@ -1,5 +1,9 @@
 import { ApolloServer } from '@apollo/server';
+import { GraphQLError } from 'graphql';
 import { startStandaloneServer } from '@apollo/server/standalone';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 const typeDefs = `#graphql
   type Query {
@@ -36,23 +40,38 @@ interface User {
   id: number;
   name: string;
   email: string;
-  birthDate: string;
+  birthDate: Date;
 }
 
-const users: User[] = [];
+async function insertUserIntoDB(userData: UserInput): Promise<User> {
+  try {
+    const newUser = await prisma.user.create({
+      data: {
+        name: userData.name,
+        email: userData.email,
+        password: userData.password,
+        birthDate: new Date(userData.birthDate),
+      },
+    });
+
+    return newUser;
+  } catch (err) {
+    throw new GraphQLError('Failed to create new user.', {
+      extensions: {
+        code: 'INVALID_USER_DATA',
+        errorInfo: err,
+      },
+    });
+  }
+}
 
 const resolvers = {
   Query: {
     hello: () => 'Hello World!',
   },
   Mutation: {
-    createUser: (_, args: { user: UserInput }): User => {
-      const id = Math.floor(Math.random() * 100000);
-
-      const user = { ...args.user, id: id };
-      users.push(user);
-
-      return user;
+    createUser: async (_, args: { user: UserInput }): Promise<User> => {
+      return insertUserIntoDB(args.user);
     },
   },
 };
