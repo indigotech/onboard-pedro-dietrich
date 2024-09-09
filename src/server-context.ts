@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { GraphQLError } from 'graphql';
 
 export interface TokenInterface {
   userId: number;
@@ -14,13 +15,17 @@ export const serverContext = async function ({ req }): Promise<{ userId: number 
 
   const token = req.headers.authorization;
   if (!token) {
-    throw new Error('Authentication token missing.');
+    throw new GraphQLError('Authentication token missing.', {
+      extensions: { code: 'UNAUTHENTICATED', http: { status: 200 } },
+    });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.TOKEN_KEY) as TokenInterface;
     return { userId: decoded.userId };
   } catch (err) {
-    throw new Error(`Invalid token.\n${err}`);
+    throw new GraphQLError(`Invalid token.\n${err}`, {
+      extensions: { code: 'UNAUTHENTICATED', http: { status: 200 } },
+    });
   }
 };
