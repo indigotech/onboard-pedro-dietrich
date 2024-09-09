@@ -102,8 +102,22 @@ describe('Onboard server API', function () {
       const currentUserCount = await prisma.user.count();
 
       expect(currentUserCount).to.be.eq(previousUserCount);
-      expect(response.data.data.createUser).to.be.eq(null);
-      expect(response.data.errors[0].message).to.be.eq('E-mail is already in use.');
+      expect(response.data).to.be.deep.eq({
+        data: {
+          createUser: null,
+        },
+        errors: [
+          {
+            message: 'E-mail is already in use.',
+            extensions: {
+              code: 'INTERNAL_SERVER_ERROR',
+              additionalInfo: 'The e-mail must be unique, and the one received is already present in the database.',
+            },
+            locations: [{ column: 9, line: 3 }],
+            path: ['createUser'],
+          },
+        ],
+      });
     });
 
     it('should fail to create user with weak password', async function () {
@@ -119,8 +133,22 @@ describe('Onboard server API', function () {
       const currentUserCount = await prisma.user.count();
 
       expect(currentUserCount).to.be.eq(previousUserCount);
-      expect(response.data.data.createUser).to.be.eq(null);
-      expect(response.data.errors[0].message).to.be.eq('Invalid password.');
+      expect(response.data).to.be.deep.eq({
+        data: {
+          createUser: null,
+        },
+        errors: [
+          {
+            message: 'Invalid password.',
+            extensions: {
+              code: 'INTERNAL_SERVER_ERROR',
+              additionalInfo: 'Password needs to contain at least 6 characters, with at least 1 letter and 1 digit.',
+            },
+            locations: [{ column: 9, line: 3 }],
+            path: ['createUser'],
+          },
+        ],
+      });
     });
 
     it('should fail to create user with invalid birth date', async function () {
@@ -136,8 +164,22 @@ describe('Onboard server API', function () {
       const currentUserCount = await prisma.user.count();
 
       expect(currentUserCount).to.be.eq(previousUserCount);
-      expect(response.data.data.createUser).to.be.eq(null);
-      expect(response.data.errors[0].message).to.be.eq('Unreasonable birth date detected.');
+      expect(response.data).to.be.deep.eq({
+        data: {
+          createUser: null,
+        },
+        errors: [
+          {
+            message: 'Unreasonable birth date detected.',
+            extensions: {
+              code: 'INTERNAL_SERVER_ERROR',
+              additionalInfo: 'The birth date must be between the year 1900 and the current date.',
+            },
+            locations: [{ column: 9, line: 3 }],
+            path: ['createUser'],
+          },
+        ],
+      });
     });
   });
 });
