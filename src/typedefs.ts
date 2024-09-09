@@ -17,8 +17,19 @@ export const typeDefs = `#graphql
     birthDate: String!
   }
 
+  input LoginInput {
+    email: String!
+    password: String!
+  }
+
+  type Authentication {
+    user: User!
+    token: String!
+  }
+
   type Mutation {
     createUser(user: UserInput!): User
+    login(loginInput: LoginInput!): Authentication
   }
 `;
 
@@ -34,4 +45,14 @@ export interface User {
   name: string;
   email: string;
   birthDate: Date;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export interface Authentication {
+  user: User;
+  token: string;
 }

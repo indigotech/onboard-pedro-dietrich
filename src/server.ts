@@ -1,11 +1,12 @@
 import bcrypt from 'bcryptjs';
-import { ApolloServer } from '@apollo/server';
+import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
+import { ApolloServer } from '@apollo/server';
 import { PrismaClient } from '@prisma/client';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-import { typeDefs, User, UserInput } from './typedefs.js';
+import { typeDefs, User, UserInput, LoginInput, Authentication } from './typedefs.js';
 
 export let prisma: PrismaClient;
 
@@ -77,6 +78,30 @@ async function insertUserIntoDB(userData: UserInput): Promise<User> {
   }
 }
 
+async function login(loginInput: LoginInput): Promise<Authentication> {
+  let user: {
+    id: number;
+    name: string;
+    email: string;
+    password: string;
+    birthDate: Date;
+  };
+  try {
+    user = await prisma.user.findUnique({ where: { email: loginInput.email } });
+  } catch {
+    throw new ServerErrorGQL(
+      400,
+      'Could not login into account.',
+      'Login could not be done due to an unhandled error.',
+    );
+  }
+
+  if (user && bcrypt.compareSync(loginInput.password, user.password)) {
+    return { user: user, token: jwt.sign({ userId: user.id }, process.env.TOKEN_KEY) };
+  }
+  throw new ServerErrorGQL(400, 'Incorrect e-mail or password.', 'The credentials are incorrect. Try again.');
+}
+
 const resolvers = {
   Query: {
     hello: () => 'Hello World!',
@@ -84,6 +109,9 @@ const resolvers = {
   Mutation: {
     createUser: async (_, args: { user: UserInput }): Promise<User> => {
       return insertUserIntoDB(args.user);
+    },
+    login: async (_, args: { loginInput: LoginInput }): Promise<Authentication> => {
+      return login(args.loginInput);
     },
   },
 };
