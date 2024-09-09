@@ -1,10 +1,17 @@
 import axios from 'axios';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { expect } from 'chai';
-
-import { initializeDatabaseInstance, prisma, startServer, DatabaseUserData } from '../src/server.js';
 import { ApolloServer } from '@apollo/server';
+
 import { LoginInput, UserInput, User } from '../src/typedefs.js';
+import { initializeDatabaseInstance, prisma, startServer, DatabaseUserData } from '../src/server.js';
+
+interface TokenInterface {
+  userId: number;
+  iat: number;
+  exp: number;
+}
 
 describe('Login API', function () {
   let server: ApolloServer;
@@ -77,7 +84,16 @@ describe('Login API', function () {
     it('should be able to login with the correct credentials', async function () {
       const response = await axios.post(url, loginMutation);
       const user: User = response.data.data.login.user;
+
       const token: string = response.data.data.login.token;
+      let tokenData: TokenInterface;
+      let tokenDuration: number;
+      jwt.verify(token, process.env.TOKEN_KEY, function (err, decoded: unknown) {
+        if (!err) {
+          tokenData = decoded as TokenInterface;
+          tokenDuration = tokenData.exp - tokenData.iat;
+        }
+      });
 
       expect(user).to.be.deep.eq({
         id: dbUser.id.toString(),
@@ -85,7 +101,39 @@ describe('Login API', function () {
         email: loginInput.email,
         birthDate: dbUser.birthDate.getTime().toString(),
       });
-      expect(!token).to.be.eq(false);
+      expect(tokenData.userId).to.be.eq(dbUser.id);
+      expect(tokenDuration).to.be.eq(30 * 60);
+    });
+
+    it('should be able to login with the correct credentials and using "Remember Me"', async function () {
+      loginInput.rememberMe = true;
+      const rememberMeLoginMutation = {
+        operationName: 'LoginMutation',
+        query: loginQuery,
+        variables: { loginInput: loginInput },
+      };
+
+      const response = await axios.post(url, rememberMeLoginMutation);
+      const user: User = response.data.data.login.user;
+
+      const token: string = response.data.data.login.token;
+      let tokenData: TokenInterface;
+      let tokenDuration: number;
+      jwt.verify(token, process.env.TOKEN_KEY, function (err, decoded: unknown) {
+        if (!err) {
+          tokenData = decoded as TokenInterface;
+          tokenDuration = tokenData.exp - tokenData.iat;
+        }
+      });
+
+      expect(user).to.be.deep.eq({
+        id: dbUser.id.toString(),
+        name: dbUser.name,
+        email: loginInput.email,
+        birthDate: dbUser.birthDate.getTime().toString(),
+      });
+      expect(tokenData.userId).to.be.eq(dbUser.id);
+      expect(tokenDuration).to.be.eq(7 * 24 * 60 * 60);
     });
 
     it('should not be able to login with incorrect password', async function () {

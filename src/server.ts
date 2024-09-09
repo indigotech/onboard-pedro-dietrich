@@ -101,7 +101,14 @@ async function login(loginInput: LoginInput): Promise<Authentication> {
   }
 
   if (user && bcrypt.compareSync(loginInput.password, user.password)) {
-    return { user: user, token: jwt.sign({ userId: user.id }, process.env.TOKEN_KEY) };
+    let expiresTime = '30m';
+    if (loginInput?.rememberMe) {
+      expiresTime = '7d';
+    }
+    return {
+      user: user,
+      token: jwt.sign({ userId: user.id }, process.env.TOKEN_KEY, { expiresIn: expiresTime }),
+    };
   }
   throw new ServerErrorGQL(400, 'Incorrect e-mail or password.', 'The credentials are incorrect. Try again.');
 }
