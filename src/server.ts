@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
+import { serverContext } from './server-context.js';
 import { typeDefs, User, UserInput, LoginInput, Authentication } from './typedefs.js';
 
 export interface DatabaseUserData {
@@ -135,6 +136,7 @@ export const startServer = async (port: number): Promise<{ server: ApolloServer;
 
   const { url } = await startStandaloneServer(server, {
     listen: { port: port },
+    context: serverContext,
   });
 
   return { server: server, url: url };
