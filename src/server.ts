@@ -34,14 +34,14 @@ const typeDefs = `#graphql
   }
 `;
 
-interface UserInput {
+export interface UserInput {
   name: string;
   email: string;
   password: string;
   birthDate: string;
 }
 
-interface User {
+export interface User {
   id: number;
   name: string;
   email: string;

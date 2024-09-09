@@ -1,10 +1,11 @@
 import axios from 'axios';
+import bcrypt from 'bcryptjs';
 import { expect } from 'chai';
 import { ApolloServer } from '@apollo/server';
 
-import { initializeDatabaseInstance, startServer, prisma } from '../src/server.js';
+import { initializeDatabaseInstance, startServer, prisma, User, UserInput } from '../src/server.js';
 
-describe('Onboard server', function () {
+describe('Onboard server API', function () {
   let server: ApolloServer;
   let url: string;
 
@@ -17,26 +18,7 @@ describe('Onboard server', function () {
     await server.stop();
   });
 
-  afterEach(async function () {
-    await prisma.user.deleteMany({});
-  });
-
-  describe('Database connection', function () {
-    it('should be connected to the database through Prisma', async function () {
-      const user = await prisma.user.create({
-        data: {
-          name: 'Test User',
-          email: 'test@user.com',
-          password: 'test_password',
-          birthDate: new Date('2000-01-01'),
-        },
-      });
-
-      expect(user).not.to.be.eq(null);
-    });
-  });
-
-  describe('Hello query', function () {
+  describe('#Hello query', function () {
     it('should fetch the response "Hello World!"', async function () {
       const response = await axios.post(url, {
         query: `#graphql
@@ -45,7 +27,56 @@ describe('Onboard server', function () {
           }
         `,
       });
+
       expect(response.data.data.hello).to.be.eq('Hello World!');
+    });
+  });
+
+  describe('#Create user mutation', async function () {
+    afterEach(async function () {
+      await prisma.user.deleteMany({});
+    });
+
+    const userInput: UserInput = {
+      name: 'Test User',
+      email: 'test@user.com',
+      password: 'password123',
+      birthDate: '2000-01-01',
+    };
+
+    const createUserMutation = {
+      operationName: 'CreateUserMutation',
+      query: `#graphql
+        mutation CreateUserMutation($user: UserInput!) {
+          createUser(user: $user) {
+            id
+            name
+            email
+            birthDate
+          }
+        }
+      `,
+      variables: {
+        user: userInput,
+      },
+    };
+
+    it('should store user in the database and return it to client', async function () {
+      const response = await axios.post(url, createUserMutation);
+      const createdUser: User = response.data.data.createUser;
+      const databaseUserInfo = await prisma.user.findUnique({ where: { email: userInput.email } });
+
+      expect(databaseUserInfo.name).to.be.eq(userInput.name);
+      expect(databaseUserInfo.email).to.be.eq(userInput.email);
+      expect(databaseUserInfo.birthDate).to.be.deep.eq(new Date(userInput.birthDate));
+      expect(bcrypt.compareSync(userInput.password, databaseUserInfo.password)).to.be.eq(true);
+
+      expect(createdUser).to.be.deep.eq({
+        id: databaseUserInfo.id.toString(),
+        name: userInput.name,
+        email: userInput.email,
+        birthDate: new Date(userInput.birthDate).getTime().toString(),
+      });
     });
   });
 });
