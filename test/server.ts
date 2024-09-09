@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs';
 import { expect } from 'chai';
 import { ApolloServer } from '@apollo/server';
 
-import { initializeDatabaseInstance, startServer, prisma, User, UserInput } from '../src/server.js';
+import { initializeDatabaseInstance, startServer, prisma } from '../src/server.js';
+import { User, UserInput } from '../src/typedefs.js';
 
 describe('Onboard server API', function () {
   let server: ApolloServer;

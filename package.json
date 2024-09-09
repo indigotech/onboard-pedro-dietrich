@@ -7,11 +7,11 @@
     "compile": "tsc",
     "docker:up": "docker compose up -d",
     "docker:stop": "docker compose stop",
-    "start": "npm run compile && node ./dist/src/index.js",
-    "dev": "npm run compile && nodemon",
+    "start": "npm run docker:up && npm run compile && node ./dist/src/index.js",
+    "dev": "npm run docker:up && npm run compile && nodemon",
     "lint": "eslint .",
     "migrate-test": "dotenv -e test.env -- prisma migrate dev --name test",
-    "test": "npm run compile && dotenv -e test.env -- mocha 'dist/test/**/*.js'"
+    "test": "npm run docker:up && npm run compile && dotenv -e test.env -- mocha 'dist/test/**/*.js'"
   },
   "author": "Pedro Martins Dietrich",
   "license": "ISC",
