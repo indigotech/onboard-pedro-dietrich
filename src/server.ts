@@ -7,7 +7,7 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { serverContext, AuthenticationResult } from './server-context.js';
-import { typeDefs, User, UserInput, LoginInput, Authentication } from './typedefs.js';
+import { typeDefs, GetUserInput, User, UserInput, LoginInput, Authentication } from './typedefs.js';
 
 export interface DatabaseUserData {
   id: number;
@@ -32,6 +32,25 @@ class ServerErrorGQL extends GraphQLError {
     super(message, { extensions: { additionalInfo: additionalInfo } });
     this.code = code;
   }
+}
+
+async function getUser(userId: GetUserInput): Promise<User> {
+  let user: User;
+  try {
+    user = await prisma.user.findUnique({ where: { id: +userId.id } });
+  } catch (err) {
+    console.log(err);
+    throw new ServerErrorGQL(
+      400,
+      'Could not fetch user data.',
+      'User could not be found due to an unhandled error has ocurred',
+    );
+  }
+
+  if (user == null) {
+    throw new ServerErrorGQL(400, 'User does not exist.', 'No user with the specified ID could be found.');
+  }
+  return user;
 }
 
 function validatePassword(password: string): boolean {
@@ -125,6 +144,10 @@ const resolvers = {
     hello: (_, __, context) => {
       verifyUserID(context.authResult);
       return 'Hello World!';
+    },
+    user: async (_, args: { userId: GetUserInput }, context): Promise<User> => {
+      verifyUserID(context.authResult);
+      return getUser(args.userId);
     },
   },
   Mutation: {

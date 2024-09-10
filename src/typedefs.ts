@@ -1,6 +1,6 @@
 export const typeDefs = `#graphql
-  type Query {
-    hello: String!
+  input GetUserInput {
+    id: ID!
   }
 
   input UserInput {
@@ -28,11 +28,20 @@ export const typeDefs = `#graphql
     token: String!
   }
 
+  type Query {
+    hello: String!
+    user(userId: GetUserInput!): User
+  }
+
   type Mutation {
     createUser(user: UserInput!): User
     login(loginInput: LoginInput!): Authentication
   }
 `;
+
+export interface GetUserInput {
+  id: number;
+}
 
 export interface UserInput {
   name: string;
