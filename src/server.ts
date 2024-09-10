@@ -6,7 +6,7 @@ import { PrismaClient } from '@prisma/client';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-import { serverContext } from './server-context.js';
+import { serverContext, AuthenticationResult } from './server-context.js';
 import { typeDefs, User, UserInput, LoginInput, Authentication } from './typedefs.js';
 
 export interface DatabaseUserData {
@@ -114,12 +114,22 @@ async function login(loginInput: LoginInput): Promise<Authentication> {
   throw new ServerErrorGQL(400, 'Incorrect e-mail or password.', 'The credentials are incorrect. Try again.');
 }
 
+function verifyUserID(authResult: AuthenticationResult): void {
+  if (!authResult.isAuthenticated || !authResult.userId) {
+    throw new ServerErrorGQL(401, 'Unauthenticated user.', 'The JWT is either missing or invalid.');
+  }
+}
+
 const resolvers = {
   Query: {
-    hello: () => 'Hello World!',
+    hello: (_, __, context) => {
+      verifyUserID(context.authResult);
+      return 'Hello World!';
+    },
   },
   Mutation: {
-    createUser: async (_, args: { user: UserInput }): Promise<User> => {
+    createUser: async (_, args: { user: UserInput }, context): Promise<User> => {
+      verifyUserID(context.authResult);
       return insertUserIntoDB(args.user);
     },
     login: async (_, args: { loginInput: LoginInput }): Promise<Authentication> => {

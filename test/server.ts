@@ -102,12 +102,18 @@ describe('Onboard server API', function () {
 
       expect(currentUserCount).to.be.eq(previousUserCount);
       expect(response.data).to.be.deep.eq({
+        data: {
+          createUser: null,
+        },
         errors: [
           {
-            message: 'Authentication token missing.',
+            message: 'Unauthenticated user.',
             extensions: {
-              code: 'UNAUTHENTICATED',
+              code: 'INTERNAL_SERVER_ERROR',
+              additionalInfo: 'The JWT is either missing or invalid.',
             },
+            locations: [{ column: 9, line: 3 }],
+            path: ['createUser'],
           },
         ],
       });
