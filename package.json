@@ -11,6 +11,7 @@
     "dev": "npm run docker:up && npm run compile && nodemon",
     "lint": "eslint .",
     "migrate-test": "dotenv -e test.env -- prisma migrate dev --name test",
+    "seeds": "npm run docker:up && npm run compile && node  ./dist/db_seeding/user_seed.js",
     "test": "npm run docker:up && npm run compile && dotenv -e test.env -- mocha 'dist/test/**/*.js'"
   },
   "author": "Pedro Martins Dietrich",
