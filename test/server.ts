@@ -97,11 +97,10 @@ describe('Onboard server API', function () {
           birthDate: new Date(userInput.birthDate),
         },
       });
-      const previousUserCount = await prisma.user.count();
       const response = await axios.post(url, createUserMutation);
-      const currentUserCount = await prisma.user.count();
+      const userCount = await prisma.user.count();
 
-      expect(currentUserCount).to.be.eq(previousUserCount);
+      expect(userCount).to.be.eq(1);
       expect(response.data).to.be.deep.eq({
         data: {
           createUser: null,
@@ -128,11 +127,10 @@ describe('Onboard server API', function () {
         variables: { user: userInput },
       };
 
-      const previousUserCount = await prisma.user.count();
       const response = await axios.post(url, weakCreateUserMutation);
-      const currentUserCount = await prisma.user.count();
+      const userCount = await prisma.user.count();
 
-      expect(currentUserCount).to.be.eq(previousUserCount);
+      expect(userCount).to.be.eq(0);
       expect(response.data).to.be.deep.eq({
         data: {
           createUser: null,
@@ -159,11 +157,10 @@ describe('Onboard server API', function () {
         variables: { user: userInput },
       };
 
-      const previousUserCount = await prisma.user.count();
       const response = await axios.post(url, invalidBdayCreateUserMutation);
-      const currentUserCount = await prisma.user.count();
+      const userCount = await prisma.user.count();
 
-      expect(currentUserCount).to.be.eq(previousUserCount);
+      expect(userCount).to.be.eq(0);
       expect(response.data).to.be.deep.eq({
         data: {
           createUser: null,
