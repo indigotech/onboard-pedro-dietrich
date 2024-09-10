@@ -3,6 +3,10 @@ export const typeDefs = `#graphql
     id: ID!
   }
 
+  input UserListInput {
+    userLimit: Int
+  }
+
   input UserInput {
     name: String!
     email: String!
@@ -31,6 +35,7 @@ export const typeDefs = `#graphql
   type Query {
     hello: String!
     user(userId: GetUserInput!): User
+    users(usersInput: UserListInput): [User]!
   }
 
   type Mutation {
@@ -41,6 +46,10 @@ export const typeDefs = `#graphql
 
 export interface GetUserInput {
   id: number;
+}
+
+export interface UserListInput {
+  userLimit: number;
 }
 
 export interface UserInput {
