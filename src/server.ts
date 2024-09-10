@@ -8,6 +8,16 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { typeDefs, User, UserInput, LoginInput, Authentication } from './typedefs.js';
 
+export interface DatabaseUserData {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  birthDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export let prisma: PrismaClient;
 
 export const initializeDatabaseInstance = (): void => {
@@ -79,18 +89,12 @@ async function insertUserIntoDB(userData: UserInput): Promise<User> {
 }
 
 async function login(loginInput: LoginInput): Promise<Authentication> {
-  let user: {
-    id: number;
-    name: string;
-    email: string;
-    password: string;
-    birthDate: Date;
-  };
+  let user: DatabaseUserData;
   try {
     user = await prisma.user.findUnique({ where: { email: loginInput.email } });
   } catch {
     throw new ServerErrorGQL(
-      400,
+      500,
       'Could not login into account.',
       'Login could not be done due to an unhandled error.',
     );

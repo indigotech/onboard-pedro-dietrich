@@ -2,7 +2,7 @@ import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import { expect } from 'chai';
 
-import { initializeDatabaseInstance, prisma, startServer } from '../src/server.js';
+import { initializeDatabaseInstance, prisma, startServer, DatabaseUserData } from '../src/server.js';
 import { ApolloServer } from '@apollo/server';
 import { LoginInput, UserInput, User } from '../src/typedefs.js';
 
@@ -52,13 +52,7 @@ describe('Login API', function () {
       variables: { loginInput: loginInput },
     };
 
-    let dbUser: {
-      id: number;
-      name: string;
-      email: string;
-      password: string;
-      birthDate: Date;
-    };
+    let dbUser: DatabaseUserData;
 
     beforeEach(async function () {
       loginInput = {
