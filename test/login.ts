@@ -86,14 +86,8 @@ describe('Login API', function () {
       const user: User = response.data.data.login.user;
 
       const token: string = response.data.data.login.token;
-      let tokenData: TokenInterface;
-      let tokenDuration: number;
-      jwt.verify(token, process.env.TOKEN_KEY, function (err, decoded: unknown) {
-        if (!err) {
-          tokenData = decoded as TokenInterface;
-          tokenDuration = tokenData.exp - tokenData.iat;
-        }
-      });
+      const tokenData = jwt.verify(token, process.env.TOKEN_KEY) as TokenInterface;
+      const tokenDuration = tokenData.exp - tokenData.iat;
 
       expect(user).to.be.deep.eq({
         id: dbUser.id.toString(),
@@ -117,14 +111,8 @@ describe('Login API', function () {
       const user: User = response.data.data.login.user;
 
       const token: string = response.data.data.login.token;
-      let tokenData: TokenInterface;
-      let tokenDuration: number;
-      jwt.verify(token, process.env.TOKEN_KEY, function (err, decoded: unknown) {
-        if (!err) {
-          tokenData = decoded as TokenInterface;
-          tokenDuration = tokenData.exp - tokenData.iat;
-        }
-      });
+      const tokenData = jwt.verify(token, process.env.TOKEN_KEY) as TokenInterface;
+      const tokenDuration = tokenData.exp - tokenData.iat;
 
       expect(user).to.be.deep.eq({
         id: dbUser.id.toString(),
