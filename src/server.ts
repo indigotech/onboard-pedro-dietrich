@@ -72,7 +72,6 @@ async function getUsers(usersInput: UserListInput): Promise<UserList> {
     return {
       users: users,
       totalUsers: total,
-      userCount: users.length,
       offset: offset,
       lastPage: offset + users.length === total,
     };

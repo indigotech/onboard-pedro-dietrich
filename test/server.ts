@@ -372,7 +372,6 @@ describe('User API', function () {
             birthDate
           }
           totalUsers
-          userCount
           offset
           lastPage
         }
@@ -401,7 +400,6 @@ describe('User API', function () {
         users: {
           users: expectedList,
           totalUsers: dbUsers.length,
-          userCount: expectedList.length,
           offset: 0,
           lastPage: false,
         },
@@ -433,9 +431,30 @@ describe('User API', function () {
         users: {
           users: expectedList,
           totalUsers: dbUsers.length,
-          userCount: expectedList.length,
           offset: offset,
           lastPage: true,
+        },
+      });
+    });
+
+    it('should retrieve an empty user list when offset is greater than the total user count', async function () {
+      const amount = 5;
+      const offset = 70;
+
+      const usersQuery = {
+        operationName: 'GetUserListQuery',
+        query: getUserListQuery,
+        variables: { usersInput: { userLimit: amount, offset: offset } },
+      };
+
+      const response = await axios.post(url, usersQuery);
+
+      expect(response.data.data).to.be.deep.eq({
+        users: {
+          users: [],
+          totalUsers: dbUsers.length,
+          offset: offset,
+          lastPage: false,
         },
       });
     });
