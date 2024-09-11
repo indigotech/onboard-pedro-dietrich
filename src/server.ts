@@ -7,7 +7,16 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { serverContext, AuthenticationResult } from './server-context.js';
-import { typeDefs, GetUserInput, User, UserInput, UserListInput, LoginInput, Authentication } from './typedefs.js';
+import {
+  typeDefs,
+  UserInput,
+  GetUserInput,
+  UserListInput,
+  LoginInput,
+  User,
+  UserList,
+  Authentication,
+} from './typedefs.js';
 
 export interface DatabaseUserData {
   id: number;
@@ -48,13 +57,22 @@ async function getUser(userId: GetUserInput): Promise<User> {
   return user;
 }
 
-async function getUsers(usersInput: UserListInput): Promise<User[]> {
-  const limit = usersInput.userLimit;
-  console.log();
+async function getUsers(usersInput: UserListInput): Promise<UserList> {
+  const limit = usersInput?.userLimit ? usersInput.userLimit : 10;
+  const offset = usersInput?.offset ? usersInput.offset : 0;
+
   try {
-    return await prisma.user.findMany({ take: limit, orderBy: { name: 'asc' } });
-  } catch (err) {
-    console.log(err);
+    const users = await prisma.user.findMany({ take: limit, skip: offset, orderBy: { name: 'asc' } });
+    const total = await prisma.user.count();
+
+    return {
+      users: users,
+      totalUsers: total,
+      userCount: users.length,
+      offset: offset,
+      lastPage: offset + users.length === total,
+    };
+  } catch {
     throw new ServerErrorGQL(
       500,
       'Could not fetch list of users.',
@@ -163,9 +181,9 @@ const resolvers = {
       verifyUserID(context.authResult);
       return getUser(args.userId);
     },
-    users: async (_, args: { usersInput: UserListInput }, context): Promise<User[]> => {
+    users: async (_, args: { usersInput: UserListInput }, context): Promise<UserList> => {
       verifyUserID(context.authResult);
-      return getUsers(args?.usersInput?.userLimit ? args.usersInput : { userLimit: 20 });
+      return getUsers(args?.usersInput ? args.usersInput : { userLimit: 10, offset: 0 });
     },
   },
   Mutation: {

@@ -5,6 +5,7 @@ export const typeDefs = `#graphql
 
   input UserListInput {
     userLimit: Int
+    offset: Int
   }
 
   input UserInput {
@@ -14,6 +15,12 @@ export const typeDefs = `#graphql
     birthDate: String!
   }
 
+  input LoginInput {
+    email: String!
+    password: String!
+    rememberMe: Boolean
+  }
+
   type User {
     id: ID!
     name: String!
@@ -21,10 +28,12 @@ export const typeDefs = `#graphql
     birthDate: String!
   }
 
-  input LoginInput {
-    email: String!
-    password: String!
-    rememberMe: Boolean
+  type UserList {
+    users: [User]!
+    totalUsers: Int!
+    userCount: Int!
+    offset: Int!
+    lastPage: Boolean!
   }
 
   type Authentication {
@@ -35,7 +44,7 @@ export const typeDefs = `#graphql
   type Query {
     hello: String!
     user(userId: GetUserInput!): User
-    users(usersInput: UserListInput): [User]!
+    users(usersInput: UserListInput): UserList!
   }
 
   type Mutation {
@@ -50,6 +59,7 @@ export interface GetUserInput {
 
 export interface UserListInput {
   userLimit: number;
+  offset: number;
 }
 
 export interface UserInput {
@@ -59,6 +69,12 @@ export interface UserInput {
   birthDate: string;
 }
 
+export interface LoginInput {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -66,10 +82,12 @@ export interface User {
   birthDate: Date;
 }
 
-export interface LoginInput {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
+export interface UserList {
+  users: User[];
+  totalUsers: number;
+  userCount: number;
+  offset: number;
+  lastPage: boolean;
 }
 
 export interface Authentication {
