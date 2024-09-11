@@ -38,17 +38,12 @@ async function getUser(userId: GetUserInput): Promise<User> {
   let user: User;
   try {
     user = await prisma.user.findUnique({ where: { id: +userId.id } });
-  } catch (err) {
-    console.log(err);
-    throw new ServerErrorGQL(
-      400,
-      'Could not fetch user data.',
-      'User could not be found due to an unhandled error has ocurred',
-    );
+  } catch {
+    throw new ServerErrorGQL(400, 'Could not fetch user data.', 'User could not be found due to an unhandled error.');
   }
 
-  if (user == null) {
-    throw new ServerErrorGQL(400, 'User does not exist.', 'No user with the specified ID could be found.');
+  if (!user) {
+    throw new ServerErrorGQL(404, 'User does not exist.', 'No user with the specified ID could be found.');
   }
   return user;
 }
