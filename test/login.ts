@@ -136,13 +136,9 @@ describe('Login API', function () {
         },
         errors: [
           {
+            code: 400,
             message: 'Incorrect e-mail or password.',
-            extensions: {
-              code: 'INTERNAL_SERVER_ERROR',
-              additionalInfo: 'The credentials are incorrect. Try again.',
-            },
-            path: ['login'],
-            locations: [{ column: 9, line: 3 }],
+            additionalInfo: 'The credentials are incorrect. Try again.',
           },
         ],
       });
@@ -165,13 +161,9 @@ describe('Login API', function () {
         },
         errors: [
           {
+            code: 400,
             message: 'Incorrect e-mail or password.',
-            extensions: {
-              code: 'INTERNAL_SERVER_ERROR',
-              additionalInfo: 'The credentials are incorrect. Try again.',
-            },
-            path: ['login'],
-            locations: [{ column: 9, line: 3 }],
+            additionalInfo: 'The credentials are incorrect. Try again.',
           },
         ],
       });
