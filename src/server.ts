@@ -58,11 +58,15 @@ async function getUser(userId: GetUserInput): Promise<User> {
 }
 
 async function getUsers(usersInput: UserListInput): Promise<UserList> {
-  const limit = usersInput?.userLimit ? usersInput.userLimit : 10;
-  const offset = usersInput?.offset ? usersInput.offset : 0;
+  const limit = usersInput?.userLimit ?? 10;
+  const offset = usersInput?.offset ?? 0;
 
   try {
-    const users = await prisma.user.findMany({ take: limit, skip: offset, orderBy: { name: 'asc' } });
+    const users = await prisma.user.findMany({
+      take: limit,
+      skip: offset,
+      orderBy: { name: 'asc' },
+    });
     const total = await prisma.user.count();
 
     return {
@@ -183,7 +187,7 @@ const resolvers = {
     },
     users: async (_, args: { usersInput: UserListInput }, context): Promise<UserList> => {
       verifyUserID(context.authResult);
-      return getUsers(args?.usersInput ? args.usersInput : { userLimit: 10, offset: 0 });
+      return getUsers(args.usersInput);
     },
   },
   Mutation: {

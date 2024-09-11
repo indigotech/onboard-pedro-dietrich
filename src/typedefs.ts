@@ -4,8 +4,8 @@ export const typeDefs = `#graphql
   }
 
   input UserListInput {
-    userLimit: Int
-    offset: Int
+    userLimit: Int = 10
+    offset: Int = 0
   }
 
   input UserInput {
@@ -44,7 +44,7 @@ export const typeDefs = `#graphql
   type Query {
     hello: String!
     user(userId: GetUserInput!): User
-    users(usersInput: UserListInput): UserList!
+    users(usersInput: UserListInput! = { userLimit: 10, offset: 0 }): UserList!
   }
 
   type Mutation {
