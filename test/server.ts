@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs';
 import { expect } from 'chai';
 import { ApolloServer } from '@apollo/server';
 
-import { initializeDatabaseInstance, startServer, prisma, User, UserInput } from '../src/server.js';
+import { initializeDatabaseInstance, startServer, prisma, DatabaseUserData } from '../src/server.js';
+import { User, UserInput } from '../src/typedefs.js';
 
 describe('Onboard server API', function () {
   let server: ApolloServer;
@@ -73,7 +74,7 @@ describe('Onboard server API', function () {
     it('should store user in the database and return it to client', async function () {
       const response = await axios.post(url, createUserMutation);
       const createdUser: User = response.data.data.createUser;
-      const databaseUserInfo = await prisma.user.findUnique({ where: { email: userInput.email } });
+      const databaseUserInfo: DatabaseUserData = await prisma.user.findUnique({ where: { email: userInput.email } });
 
       expect(databaseUserInfo.name).to.be.eq(userInput.name);
       expect(databaseUserInfo.email).to.be.eq(userInput.email);

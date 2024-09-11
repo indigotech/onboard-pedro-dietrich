@@ -1,53 +1,28 @@
 import bcrypt from 'bcryptjs';
-import { ApolloServer } from '@apollo/server';
+import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
+import { ApolloServer } from '@apollo/server';
 import { PrismaClient } from '@prisma/client';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+
+import { typeDefs, User, UserInput, LoginInput, Authentication } from './typedefs.js';
+
+export interface DatabaseUserData {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  birthDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export let prisma: PrismaClient;
 
 export const initializeDatabaseInstance = (): void => {
   prisma = new PrismaClient();
 };
-
-const typeDefs = `#graphql
-  type Query {
-    hello: String!
-  }
-
-  input UserInput {
-    name: String!
-    email: String!
-    password: String!
-    birthDate: String!
-  }
-
-  type User {
-    id: ID!
-    name: String!
-    email: String!
-    birthDate: String!
-  }
-
-  type Mutation {
-    createUser(user: UserInput!): User
-  }
-`;
-
-export interface UserInput {
-  name: string;
-  email: string;
-  password: string;
-  birthDate: string;
-}
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  birthDate: Date;
-}
 
 class ServerErrorGQL extends GraphQLError {
   public code: number;
@@ -113,6 +88,24 @@ async function insertUserIntoDB(userData: UserInput): Promise<User> {
   }
 }
 
+async function login(loginInput: LoginInput): Promise<Authentication> {
+  let user: DatabaseUserData;
+  try {
+    user = await prisma.user.findUnique({ where: { email: loginInput.email } });
+  } catch {
+    throw new ServerErrorGQL(
+      500,
+      'Could not login into account.',
+      'Login could not be done due to an unhandled error.',
+    );
+  }
+
+  if (user && bcrypt.compareSync(loginInput.password, user.password)) {
+    return { user: user, token: jwt.sign({ userId: user.id }, process.env.TOKEN_KEY) };
+  }
+  throw new ServerErrorGQL(400, 'Incorrect e-mail or password.', 'The credentials are incorrect. Try again.');
+}
+
 const resolvers = {
   Query: {
     hello: () => 'Hello World!',
@@ -120,6 +113,9 @@ const resolvers = {
   Mutation: {
     createUser: async (_, args: { user: UserInput }): Promise<User> => {
       return insertUserIntoDB(args.user);
+    },
+    login: async (_, args: { loginInput: LoginInput }): Promise<Authentication> => {
+      return login(args.loginInput);
     },
   },
 };
