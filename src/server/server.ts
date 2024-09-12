@@ -1,10 +1,10 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 
-import login from './api/login/login.js';
-import getUser from './api/user/get-user.js';
-import getUsers from './api/user/get-users.js';
-import createUser from './api/user/create-user.js';
+import login from '../api/login/login.js';
+import getUser from '../api/user/get-user.js';
+import getUsers from '../api/user/get-users.js';
+import createUser from '../api/user/create-user.js';
 import { ServerErrorGQL, formatError } from './server-error.js';
 import { serverContext, AuthenticationResult } from './server-context.js';
 import {
@@ -16,7 +16,7 @@ import {
   User,
   UserList,
   Authentication,
-} from './typedefs.js';
+} from '../typedefs.js';
 
 function verifyUserID(authResult: AuthenticationResult): void {
   if (!authResult.isAuthenticated || !authResult.userId) {

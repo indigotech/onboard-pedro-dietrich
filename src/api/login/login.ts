@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-import { ServerErrorGQL } from '../../server-error.js';
+import { ServerErrorGQL } from '../../server/server-error.js';
 import { prisma, DatabaseUserData } from '../../database.js';
 import { LoginInput, Authentication } from '../../typedefs.js';
 

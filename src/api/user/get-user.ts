@@ -1,5 +1,5 @@
 import { prisma } from '../../database.js';
-import { ServerErrorGQL } from '../../server-error.js';
+import { ServerErrorGQL } from '../../server/server-error.js';
 import { GetUserInput, User } from '../../typedefs.js';
 
 export default async function getUser(userId: GetUserInput): Promise<User> {

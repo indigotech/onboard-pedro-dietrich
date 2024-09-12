@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { expect } from 'chai';
 import { ApolloServer } from '@apollo/server';
 
-import { startServer } from '../src/server.js';
+import { startServer } from '../src/server/server.js';
 import { User, UserInput } from '../src/typedefs.js';
 import { prisma, initializeDatabaseInstance, DatabaseUserData } from '../src/database.js';
 

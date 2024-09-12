@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { prisma } from '../../database.js';
-import { ServerErrorGQL } from '../../server-error.js';
+import { ServerErrorGQL } from '../../server/server-error.js';
 import { UserInput, AddressInput, User } from '../../typedefs.js';
 
 export default async function createUser(userData: UserInput): Promise<User> {
