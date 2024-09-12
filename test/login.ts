@@ -4,9 +4,10 @@ import jwt from 'jsonwebtoken';
 import { expect } from 'chai';
 import { ApolloServer } from '@apollo/server';
 
+import { startServer } from '../src/server.js';
 import { TokenInterface } from '../src/server-context.js';
 import { LoginInput, UserInput, User } from '../src/typedefs.js';
-import { initializeDatabaseInstance, prisma, startServer, DatabaseUserData } from '../src/server.js';
+import { prisma, initializeDatabaseInstance, DatabaseUserData } from '../src/database.js';
 
 describe('Login API', function () {
   let server: ApolloServer;

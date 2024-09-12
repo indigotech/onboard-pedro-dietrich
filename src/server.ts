@@ -1,10 +1,10 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { ApolloServer } from '@apollo/server';
-import { PrismaClient } from '@prisma/client';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
+import { prisma, DatabaseUserData } from './database.js';
 import { ServerErrorGQL, formatError } from './server-error.js';
 import { serverContext, AuthenticationResult } from './server-context.js';
 import {
@@ -16,26 +16,8 @@ import {
   User,
   UserList,
   Authentication,
-  Address,
   AddressInput,
 } from './typedefs.js';
-
-export interface DatabaseUserData {
-  id: number;
-  name: string;
-  email: string;
-  password: string;
-  birthDate: Date;
-  addresses?: Address[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export let prisma: PrismaClient;
-
-export const initializeDatabaseInstance = (): void => {
-  prisma = new PrismaClient();
-};
 
 async function getUser(userId: GetUserInput): Promise<User> {
   let user: User;
