@@ -1,11 +1,11 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { GraphQLError } from 'graphql';
 import { ApolloServer } from '@apollo/server';
 import { PrismaClient } from '@prisma/client';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
+import { ServerErrorGQL, formatError } from './server-error.js';
 import { serverContext, AuthenticationResult } from './server-context.js';
 import {
   typeDefs,
@@ -33,15 +33,6 @@ export let prisma: PrismaClient;
 export const initializeDatabaseInstance = (): void => {
   prisma = new PrismaClient();
 };
-
-class ServerErrorGQL extends GraphQLError {
-  public code: number;
-
-  public constructor(code: number, message: string, additionalInfo: string) {
-    super(message, { extensions: { additionalInfo: additionalInfo } });
-    this.code = code;
-  }
-}
 
 async function getUser(userId: GetUserInput): Promise<User> {
   let user: User;
@@ -201,6 +192,7 @@ export const startServer = async (port: number): Promise<{ server: ApolloServer;
   const server = new ApolloServer({
     typeDefs,
     resolvers,
+    formatError,
   });
 
   const { url } = await startStandaloneServer(server, {

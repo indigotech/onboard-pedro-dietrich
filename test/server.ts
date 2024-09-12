@@ -107,13 +107,9 @@ describe('User API', function () {
         },
         errors: [
           {
+            code: 401,
             message: 'Unauthenticated user.',
-            extensions: {
-              code: 'INTERNAL_SERVER_ERROR',
-              additionalInfo: 'The JWT is either missing or invalid.',
-            },
-            locations: [{ column: 9, line: 3 }],
-            path: ['createUser'],
+            additionalInfo: 'The JWT is either missing or invalid.',
           },
         ],
       });
@@ -138,13 +134,9 @@ describe('User API', function () {
         },
         errors: [
           {
+            code: 400,
             message: 'E-mail is already in use.',
-            extensions: {
-              code: 'INTERNAL_SERVER_ERROR',
-              additionalInfo: 'The e-mail must be unique, and the one received is already present in the database.',
-            },
-            locations: [{ column: 9, line: 3 }],
-            path: ['createUser'],
+            additionalInfo: 'The e-mail must be unique, and the one received is already present in the database.',
           },
         ],
       });
@@ -168,13 +160,9 @@ describe('User API', function () {
         },
         errors: [
           {
+            code: 400,
             message: 'Invalid password.',
-            extensions: {
-              code: 'INTERNAL_SERVER_ERROR',
-              additionalInfo: 'Password needs to contain at least 6 characters, with at least 1 letter and 1 digit.',
-            },
-            locations: [{ column: 9, line: 3 }],
-            path: ['createUser'],
+            additionalInfo: 'Password needs to contain at least 6 characters, with at least 1 letter and 1 digit.',
           },
         ],
       });
@@ -198,13 +186,9 @@ describe('User API', function () {
         },
         errors: [
           {
+            code: 400,
             message: 'Unreasonable birth date detected.',
-            extensions: {
-              code: 'INTERNAL_SERVER_ERROR',
-              additionalInfo: 'The birth date must be between the year 1900 and the current date.',
-            },
-            locations: [{ column: 9, line: 3 }],
-            path: ['createUser'],
+            additionalInfo: 'The birth date must be between the year 1900 and the current date.',
           },
         ],
       });
@@ -280,13 +264,9 @@ describe('User API', function () {
         },
         errors: [
           {
+            code: 404,
             message: 'User does not exist.',
-            extensions: {
-              code: 'INTERNAL_SERVER_ERROR',
-              additionalInfo: 'No user with the specified ID could be found.',
-            },
-            locations: [{ column: 9, line: 3 }],
-            path: ['user'],
+            additionalInfo: 'No user with the specified ID could be found.',
           },
         ],
       });
@@ -317,13 +297,9 @@ describe('User API', function () {
         },
         errors: [
           {
+            code: 401,
             message: 'Unauthenticated user.',
-            extensions: {
-              code: 'INTERNAL_SERVER_ERROR',
-              additionalInfo: 'The JWT is either missing or invalid.',
-            },
-            locations: [{ column: 9, line: 3 }],
-            path: ['user'],
+            additionalInfo: 'The JWT is either missing or invalid.',
           },
         ],
       });
@@ -474,13 +450,9 @@ describe('User API', function () {
         data: null,
         errors: [
           {
+            code: 401,
             message: 'Unauthenticated user.',
-            extensions: {
-              code: 'INTERNAL_SERVER_ERROR',
-              additionalInfo: 'The JWT is either missing or invalid.',
-            },
-            locations: [{ column: 9, line: 3 }],
-            path: ['users'],
+            additionalInfo: 'The JWT is either missing or invalid.',
           },
         ],
       });
