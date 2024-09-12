@@ -2,26 +2,13 @@ import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { expect } from 'chai';
-import { ApolloServer } from '@apollo/server';
 
-import { startServer } from '../src/server/server.js';
-import { TokenInterface } from '../src/server/server-context.js';
-import { LoginInput, UserInput, User } from '../src/typedefs.js';
-import { prisma, initializeDatabaseInstance, DatabaseUserData } from '../src/database.js';
+import { url } from '../../src/server/server.js';
+import { TokenInterface } from '../../src/server/server-context.js';
+import { LoginInput, UserInput, User } from '../../src/typedefs.js';
+import { prisma, DatabaseUserData } from '../../src/database.js';
 
 describe('Login API', function () {
-  let server: ApolloServer;
-  let url: string;
-
-  before(async function () {
-    initializeDatabaseInstance();
-    ({ server, url } = await startServer(+process.env.SERVER_PORT));
-  });
-
-  after(async function () {
-    await server.stop();
-  });
-
   describe('#Login mutation', async function () {
     const userInput: UserInput = {
       name: 'Test User',
