@@ -7,7 +7,16 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { serverContext, AuthenticationResult } from './server-context.js';
-import { typeDefs, GetUserInput, User, UserInput, LoginInput, Authentication } from './typedefs.js';
+import {
+  typeDefs,
+  UserInput,
+  GetUserInput,
+  UserListInput,
+  LoginInput,
+  User,
+  UserList,
+  Authentication,
+} from './typedefs.js';
 
 export interface DatabaseUserData {
   id: number;
@@ -39,13 +48,41 @@ async function getUser(userId: GetUserInput): Promise<User> {
   try {
     user = await prisma.user.findUnique({ where: { id: +userId.id } });
   } catch {
-    throw new ServerErrorGQL(400, 'Could not fetch user data.', 'User could not be found due to an unhandled error.');
+    throw new ServerErrorGQL(500, 'Could not fetch user data.', 'User could not be found due to an unhandled error.');
   }
 
   if (!user) {
     throw new ServerErrorGQL(404, 'User does not exist.', 'No user with the specified ID could be found.');
   }
   return user;
+}
+
+async function getUsers(usersInput: UserListInput): Promise<UserList> {
+  const limit = usersInput?.userLimit ?? 10;
+  const offset = usersInput?.offset ?? 0;
+
+  try {
+    const users = await prisma.user.findMany({
+      take: limit,
+      skip: offset,
+      orderBy: { name: 'asc' },
+    });
+    const total = await prisma.user.count();
+
+    return {
+      users: users,
+      totalUsers: total,
+      userCount: users.length,
+      offset: offset,
+      lastPage: offset + users.length === total,
+    };
+  } catch {
+    throw new ServerErrorGQL(
+      500,
+      'Could not fetch list of users.',
+      'User list could not be fetched due to an unhandled error.',
+    );
+  }
 }
 
 function validatePassword(password: string): boolean {
@@ -91,15 +128,19 @@ async function insertUserIntoDB(userData: UserInput): Promise<User> {
       },
     });
   } catch (err) {
-    let message = 'User could not be created.';
-    let additionalInfo = 'The user could not be inserted in the database due to an unhandled error.';
-
     if (err instanceof PrismaClientKnownRequestError && err.code === 'P2002') {
-      message = 'E-mail is already in use.';
-      additionalInfo = 'The e-mail must be unique, and the one received is already present in the database.';
+      throw new ServerErrorGQL(
+        400,
+        'E-mail is already in use.',
+        'The e-mail must be unique, and the one received is already present in the database.',
+      );
     }
 
-    throw new ServerErrorGQL(400, message, additionalInfo);
+    throw new ServerErrorGQL(
+      500,
+      'User could not be created.',
+      'The user could not be inserted in the database due to an unhandled error.',
+    );
   }
 }
 
@@ -116,13 +157,10 @@ async function login(loginInput: LoginInput): Promise<Authentication> {
   }
 
   if (user && bcrypt.compareSync(loginInput.password, user.password)) {
-    let expiresTime = '30m';
-    if (loginInput?.rememberMe) {
-      expiresTime = '7d';
-    }
+    const expireTime = loginInput?.rememberMe ? '7d' : '30m';
     return {
       user: user,
-      token: jwt.sign({ userId: user.id }, process.env.TOKEN_KEY, { expiresIn: expiresTime }),
+      token: jwt.sign({ userId: user.id }, process.env.TOKEN_KEY, { expiresIn: expireTime }),
     };
   }
   throw new ServerErrorGQL(400, 'Incorrect e-mail or password.', 'The credentials are incorrect. Try again.');
@@ -143,6 +181,10 @@ const resolvers = {
     user: async (_, args: { userId: GetUserInput }, context): Promise<User> => {
       verifyUserID(context.authResult);
       return getUser(args.userId);
+    },
+    users: async (_, args: { usersInput: UserListInput }, context): Promise<UserList> => {
+      verifyUserID(context.authResult);
+      return getUsers(args.usersInput);
     },
   },
   Mutation: {
