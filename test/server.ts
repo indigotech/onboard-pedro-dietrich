@@ -1,5 +1,6 @@
 import axios from 'axios';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { expect } from 'chai';
 import { ApolloServer } from '@apollo/server';
 
@@ -12,7 +13,8 @@ describe('Onboard server API', function () {
 
   before(async function () {
     initializeDatabaseInstance();
-    ({ server, url } = await startServer(parseInt(process.env.SERVER_PORT)));
+    ({ server, url } = await startServer(+process.env.SERVER_PORT));
+    axios.defaults.headers.authorization = jwt.sign({ userId: 1 }, process.env.TOKEN_KEY, { expiresIn: '30m' });
   });
 
   after(async function () {
@@ -48,6 +50,8 @@ describe('Onboard server API', function () {
         password: 'password123',
         birthDate: '2000-01-01',
       };
+
+      axios.defaults.headers.authorization = jwt.sign({ userId: 1 }, process.env.TOKEN_KEY, { expiresIn: '30m' });
     });
 
     afterEach(async function () {
@@ -86,6 +90,32 @@ describe('Onboard server API', function () {
         name: userInput.name,
         email: userInput.email,
         birthDate: new Date(userInput.birthDate).getTime().toString(),
+      });
+    });
+
+    it('should fail to create user without valid JWT', async function () {
+      axios.defaults.headers.authorization = '';
+
+      const previousUserCount = await prisma.user.count();
+      const response = await axios.post(url, createUserMutation);
+      const currentUserCount = await prisma.user.count();
+
+      expect(currentUserCount).to.be.eq(previousUserCount);
+      expect(response.data).to.be.deep.eq({
+        data: {
+          createUser: null,
+        },
+        errors: [
+          {
+            message: 'Unauthenticated user.',
+            extensions: {
+              code: 'INTERNAL_SERVER_ERROR',
+              additionalInfo: 'The JWT is either missing or invalid.',
+            },
+            locations: [{ column: 9, line: 3 }],
+            path: ['createUser'],
+          },
+        ],
       });
     });
 
