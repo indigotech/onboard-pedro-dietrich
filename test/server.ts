@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken';
 import { expect } from 'chai';
 import { ApolloServer } from '@apollo/server';
 
-import { initializeDatabaseInstance, startServer, prisma, DatabaseUserData } from '../src/server.js';
 import { User, UserInput } from '../src/typedefs.js';
+import { initializeDatabaseInstance, startServer, prisma, DatabaseUserData } from '../src/server.js';
 
 describe('User API', function () {
   let server: ApolloServer;
@@ -36,25 +36,39 @@ describe('User API', function () {
   });
 
   describe('#Create user mutation', async function () {
-    let userInput: UserInput = {
+    const userInput: UserInput = {
       name: 'Test User',
       email: 'test@user.com',
       password: 'password123',
       birthDate: '2000-01-01',
+      addresses: [
+        {
+          cep: 12345678,
+          street: 'Test Street',
+          streetNumber: 123,
+          complement: 1,
+          neighborhood: 'Test Neighborhood',
+          city: 'Test City',
+          state: 'Test State',
+        },
+        {
+          cep: 87654321,
+          street: 'User Street',
+          streetNumber: 321,
+          complement: 2,
+          neighborhood: 'User Neighborhood',
+          city: 'Test City',
+          state: 'Test State',
+        },
+      ],
     };
 
     beforeEach(function () {
-      userInput = {
-        name: 'Test User',
-        email: 'test@user.com',
-        password: 'password123',
-        birthDate: '2000-01-01',
-      };
-
       axios.defaults.headers.authorization = jwt.sign({ userId: 1 }, process.env.TOKEN_KEY, { expiresIn: '30m' });
     });
 
     afterEach(async function () {
+      await prisma.address.deleteMany({});
       await prisma.user.deleteMany({});
     });
 
@@ -65,6 +79,16 @@ describe('User API', function () {
           name
           email
           birthDate
+          addresses {
+            id
+            cep
+            street
+            streetNumber
+            complement
+            neighborhood
+            city
+            state
+          }
         }
       }
     `;
@@ -78,7 +102,10 @@ describe('User API', function () {
     it('should store user in the database and return it to client', async function () {
       const response = await axios.post(url, createUserMutation);
       const createdUser: User = response.data.data.createUser;
-      const databaseUserInfo: DatabaseUserData = await prisma.user.findUnique({ where: { email: userInput.email } });
+      const databaseUserInfo: DatabaseUserData = await prisma.user.findUnique({
+        where: { email: userInput.email },
+        include: { addresses: true },
+      });
 
       expect(databaseUserInfo.name).to.be.eq(userInput.name);
       expect(databaseUserInfo.email).to.be.eq(userInput.email);
@@ -90,6 +117,10 @@ describe('User API', function () {
         name: userInput.name,
         email: userInput.email,
         birthDate: new Date(userInput.birthDate).getTime().toString(),
+        addresses: [
+          { id: databaseUserInfo.addresses[0].id.toString(), ...userInput.addresses[0] },
+          { id: databaseUserInfo.addresses[1].id.toString(), ...userInput.addresses[1] },
+        ],
       });
     });
 
@@ -122,7 +153,9 @@ describe('User API', function () {
           email: userInput.email,
           password: userInput.password,
           birthDate: new Date(userInput.birthDate),
+          addresses: { createMany: { data: [] } },
         },
+        include: { addresses: true },
       });
       const response = await axios.post(url, createUserMutation);
       const userCount = await prisma.user.count();
@@ -143,11 +176,12 @@ describe('User API', function () {
     });
 
     it('should fail to create user with weak password', async function () {
-      userInput.password = 'weak_password';
+      const newUserInput = JSON.parse(JSON.stringify(userInput));
+      newUserInput.password = 'weak_password';
       const weakCreateUserMutation = {
         operationName: 'CreateUserMutation',
         query: createUserQuery,
-        variables: { user: userInput },
+        variables: { user: newUserInput },
       };
 
       const response = await axios.post(url, weakCreateUserMutation);
@@ -169,11 +203,12 @@ describe('User API', function () {
     });
 
     it('should fail to create user with invalid birth date', async function () {
-      userInput.birthDate = '2100-12-31';
+      const newUserInput = JSON.parse(JSON.stringify(userInput));
+      newUserInput.birthDate = '2100-12-31';
       const invalidBdayCreateUserMutation = {
         operationName: 'CreateUserMutation',
         query: createUserQuery,
-        variables: { user: userInput },
+        variables: { user: newUserInput },
       };
 
       const response = await axios.post(url, invalidBdayCreateUserMutation);
@@ -201,6 +236,17 @@ describe('User API', function () {
       email: 'test@user.com',
       password: 'password123',
       birthDate: '2000-01-01',
+      addresses: [
+        {
+          cep: 12345678,
+          street: 'Test Street',
+          streetNumber: 123,
+          complement: 1,
+          neighborhood: 'Test Neighborhood',
+          city: 'Test City',
+          state: 'Test State',
+        },
+      ],
     };
 
     beforeEach(function () {
@@ -208,6 +254,7 @@ describe('User API', function () {
     });
 
     afterEach(async function () {
+      await prisma.address.deleteMany({});
       await prisma.user.deleteMany({});
     });
 
@@ -218,18 +265,30 @@ describe('User API', function () {
           name
           email
           birthDate
+          addresses {
+            id
+            cep
+            street
+            streetNumber
+            complement
+            neighborhood
+            city
+            state
+          }
         }
       }
     `;
 
     it('should fetch the correct user by the ID', async function () {
-      const dbUser = await prisma.user.create({
+      const dbUser: DatabaseUserData = await prisma.user.create({
         data: {
           name: userData.name,
           email: userData.email,
           password: userData.password,
           birthDate: new Date(userData.birthDate),
+          addresses: { createMany: { data: userData.addresses } },
         },
+        include: { addresses: true },
       });
 
       const userQuery = {
@@ -246,6 +305,7 @@ describe('User API', function () {
         name: dbUser.name,
         email: dbUser.email,
         birthDate: new Date(dbUser.birthDate).getTime().toString(),
+        addresses: [{ id: dbUser.addresses[0].id, ...foundUser.addresses[0] }],
       });
     });
 
@@ -280,7 +340,9 @@ describe('User API', function () {
           email: userData.email,
           password: userData.password,
           birthDate: new Date(userData.birthDate),
+          addresses: { createMany: { data: userData.addresses } },
         },
+        include: { addresses: true },
       });
 
       const userQuery = {
@@ -335,6 +397,7 @@ describe('User API', function () {
     });
 
     afterEach(async function () {
+      await prisma.address.deleteMany({});
       await prisma.user.deleteMany({});
     });
 
@@ -346,6 +409,9 @@ describe('User API', function () {
             name
             email
             birthDate
+            addresses {
+              cep
+            }
           }
           totalUsers
           offset
@@ -367,6 +433,7 @@ describe('User API', function () {
           name,
           email,
           birthDate: new Date(birthDate).getTime().toString(),
+          addresses: [],
         }))
         .slice(0, 10);
 
@@ -398,6 +465,7 @@ describe('User API', function () {
           name,
           email,
           birthDate: new Date(birthDate).getTime().toString(),
+          addresses: [],
         }))
         .slice(offset, offset + amount);
 
