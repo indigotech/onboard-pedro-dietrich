@@ -20,6 +20,7 @@ export const typeDefs = `#graphql
   input LoginInput {
     email: String!
     password: String!
+    rememberMe: Boolean
   }
 
   type Authentication {
@@ -50,6 +51,7 @@ export interface User {
 export interface LoginInput {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface Authentication {
