@@ -31,7 +31,6 @@ export const typeDefs = `#graphql
   type UserList {
     users: [User]!
     totalUsers: Int!
-    userCount: Int!
     offset: Int!
     lastPage: Boolean!
   }
@@ -85,7 +84,6 @@ export interface User {
 export interface UserList {
   users: User[];
   totalUsers: number;
-  userCount: number;
   offset: number;
   lastPage: boolean;
 }
