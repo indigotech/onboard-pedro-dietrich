@@ -16,6 +16,8 @@ import {
   User,
   UserList,
   Authentication,
+  Address,
+  AddressInput,
 } from './typedefs.js';
 
 export interface DatabaseUserData {
@@ -24,6 +26,7 @@ export interface DatabaseUserData {
   email: string;
   password: string;
   birthDate: Date;
+  addresses?: Address[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,7 +40,7 @@ export const initializeDatabaseInstance = (): void => {
 async function getUser(userId: GetUserInput): Promise<User> {
   let user: User;
   try {
-    user = await prisma.user.findUnique({ where: { id: +userId.id } });
+    user = await prisma.user.findUnique({ where: { id: +userId.id }, include: { addresses: true } });
   } catch {
     throw new ServerErrorGQL(500, 'Could not fetch user data.', 'User could not be found due to an unhandled error.');
   }
@@ -53,10 +56,11 @@ async function getUsers(usersInput: UserListInput): Promise<UserList> {
   const offset = usersInput?.offset ?? 0;
 
   try {
-    const users = await prisma.user.findMany({
+    const users: User[] = await prisma.user.findMany({
       take: limit,
       skip: offset,
       orderBy: { name: 'asc' },
+      include: { addresses: true },
     });
     const total = await prisma.user.count();
 
@@ -109,13 +113,18 @@ async function insertUserIntoDB(userData: UserInput): Promise<User> {
   }
 
   try {
+    const addressList: AddressInput[] = userData?.addresses ?? [];
     return await prisma.user.create({
       data: {
         name: userData.name,
         email: userData.email,
         password: await hashPassword(userData.password),
         birthDate: new Date(userData.birthDate),
+        addresses: {
+          createMany: { data: addressList },
+        },
       },
+      include: { addresses: true },
     });
   } catch (err) {
     if (err instanceof PrismaClientKnownRequestError && err.code === 'P2002') {
@@ -137,7 +146,7 @@ async function insertUserIntoDB(userData: UserInput): Promise<User> {
 async function login(loginInput: LoginInput): Promise<Authentication> {
   let user: DatabaseUserData;
   try {
-    user = await prisma.user.findUnique({ where: { email: loginInput.email } });
+    user = await prisma.user.findUnique({ where: { email: loginInput.email }, include: { addresses: true } });
   } catch {
     throw new ServerErrorGQL(
       500,

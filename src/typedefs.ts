@@ -8,11 +8,22 @@ export const typeDefs = `#graphql
     offset: Int = 0
   }
 
+  input AddressInput {
+    cep: Int!
+    street: String!
+    streetNumber: Int!
+    complement: Int
+    neighborhood: String!
+    city: String!
+    state: String!
+  }
+
   input UserInput {
     name: String!
     email: String!
     password: String!
     birthDate: String!
+    addresses: [AddressInput!]
   }
 
   input LoginInput {
@@ -26,6 +37,7 @@ export const typeDefs = `#graphql
     name: String!
     email: String!
     birthDate: String!
+    addresses: [Address]!
   }
 
   type UserList {
@@ -33,6 +45,18 @@ export const typeDefs = `#graphql
     totalUsers: Int!
     offset: Int!
     lastPage: Boolean!
+  }
+
+  type Address {
+    id: ID!
+    cep: Int!
+    street: String!
+    streetNumber: Int!
+    complement: Int
+    neighborhood: String!
+    city: String!
+    state: String!
+    user: User!
   }
 
   type Authentication {
@@ -66,6 +90,17 @@ export interface UserInput {
   email: string;
   password: string;
   birthDate: string;
+  addresses?: AddressInput[];
+}
+
+export interface AddressInput {
+  cep: number;
+  street: string;
+  streetNumber: number;
+  complement?: number;
+  neighborhood: string;
+  city: string;
+  state: string;
 }
 
 export interface LoginInput {
@@ -79,6 +114,7 @@ export interface User {
   name: string;
   email: string;
   birthDate: Date;
+  addresses?: Address[];
 }
 
 export interface UserList {
@@ -86,6 +122,18 @@ export interface UserList {
   totalUsers: number;
   offset: number;
   lastPage: boolean;
+}
+
+export interface Address {
+  id: number;
+  cep: number;
+  street: string;
+  streetNumber: number;
+  complement?: number;
+  neighborhood: string;
+  city: string;
+  state: string;
+  userId: number;
 }
 
 export interface Authentication {
