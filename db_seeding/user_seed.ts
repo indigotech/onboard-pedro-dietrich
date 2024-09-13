@@ -1,4 +1,4 @@
-import { prisma, initializeDatabaseInstance } from '../src/server.js';
+import { prisma, initializeDatabaseInstance } from '../src/database.js';
 
 initializeDatabaseInstance();
 
